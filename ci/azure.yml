@@ -1,0 +1,39 @@
+pool:
+  name: Azure Pipelines
+variables:
+  release_tag: ''
+  release_title: ''
+
+steps:
+- powershell: |
+   $tag = 'autobuild-{0:yyyy-MM-dd-HH-mm}' -f (Get-Date)
+   $title = 'Auto-Build {0:yyyy-MM-dd HH:mm}' -f (Get-Date)
+
+   Write-Host "##vso[task.setvariable variable=release_tag]$tag"
+   Write-Host "##vso[task.setvariable variable=release_title]$title"
+  displayName: 'Set variables'
+
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Artifact'
+  inputs:
+    buildType: 'specific'
+    project: 'bebaadd2-1e14-45d5-8019-1cd0a783a0d2'
+    definition: '11'
+    specificBuildWithTriggering: true
+    buildVersionToDownload: 'latest'
+    itemPattern: '*/*.zip'
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+
+- task: GitHubRelease@1
+  displayName: 'GitHub release (create)'
+  inputs:
+    gitHubConnection: 'sc_ext.pre-release'
+    repositoryName: 'alan-null/sc_ext.pre-release'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'userSpecifiedTag'
+    tag: '$(release_tag)'
+    title: '$(release_title)'
+    releaseNotesSource: 'inline'
+    assets: '$(Build.ArtifactStagingDirectory)/package/*.zip'
+    addChangeLog: false

@@ -35,5 +35,6 @@ steps:
     tag: '$(release_tag)'
     title: '$(release_title)'
     releaseNotesSource: 'inline'
+    releaseNotesInline: ''
     assets: '$(Build.ArtifactStagingDirectory)/package/*.zip'
     addChangeLog: false
